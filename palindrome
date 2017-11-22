@@ -1,0 +1,38 @@
+#!/bin/bash
+#author: pdu15gsu
+
+mkdir -p tmp 
+touch tmp/tmp{1..2}
+tmp=tmp/tmp1
+tmp2=tmp/tmp2
+#temp files and folders created
+
+cat $1 | tr -d '[[:punct:][:digit:]@]' | tr '[:upper:]' '[:lower:]' | grep -ioE '[a-z]{3,}' > $tmp
+#removes punctuation, digits, converts uppercase to lower case and only selects words larger than 2 characters, ouputs to temp file
+
+sed -i -E '/\b([a-z])\1+\b/d' $tmp #strips temp file of words with only repeating characters
+
+isPal(){
+	w=$1
+	len=${#w} #length of input string
+    mid=$((len/2 + len%2 - 1)) #mid character in string
+    for (( i=0; i<=mid; i++))
+    do
+        if [[ ${w:$len-$i-1:1} != ${w:$i:1} ]] #checks each char outside in for equality
+        then
+            return 1 #if inequality is found, the function exits
+        fi
+    done
+}	    
+
+for word in $(<$tmp) #loops through each word in temp file
+	do
+		if isPal $word; then
+			echo $word >> $tmp2 #if current word is a palindrome, outputs to tmp file
+		fi
+done
+
+cat $tmp2 | sort | uniq -c | sort -nr > $tmp #sorts and groups output
+cat $tmp
+
+rm -r tmp
